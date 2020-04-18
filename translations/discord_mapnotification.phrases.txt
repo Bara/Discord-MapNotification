@@ -4,17 +4,20 @@
     {
         "en"    "Now playing:"
         "de"    "Aktuell gespielt:"
+		"pt"    "Mapa Atual:"
     }
 
     "Players Online"
     {
         "en"    "Players Online:"
         "de"    "Spieler online:"
+		"pt"    "Players Online:"
     }
 
     "Quick Join"
     {
         "en"   "Join server:"
         "de"   "Server betreten:"
+		"pt"   "Connect:"
     }
 }
