@@ -15,18 +15,21 @@ ConVar g_cWebhook = null;
 ConVar g_cAvatar = null;
 ConVar g_cUsername = null;
 ConVar g_cColor = null;
+ConVar g_cLangCode = null;
 
 public Plugin myinfo =
 {
     name        = "[Discord] Map Notifications",
     description = "",
-    version     = "1.0",
+    version     = "1.0.1",
     author      = "Bara",
     url         = "https://github.com/Bara"
 };
 
 public void OnPluginStart()
 {
+    LoadTranslations("discord_mapnotification.phrases");
+
     AutoExecConfig_SetCreateDirectory(true);
     AutoExecConfig_SetCreateFile(true);
     AutoExecConfig_SetFile("discord.mapnotifications");
@@ -34,6 +37,7 @@ public void OnPluginStart()
     g_cAvatar = AutoExecConfig_CreateConVar("discord_map_notification_avatar", "https://csgottt.com/map_notification.png", "URL to Avatar image");
     g_cUsername = AutoExecConfig_CreateConVar("discord_map_notification_username", "Map Notifications", "Discord username");
     g_cColor = AutoExecConfig_CreateConVar("discord_map_notification_color", "#FF69B4", "Hexcode of the color (with '#' !)");
+    g_cLangCode = AutoExecConfig_CreateConVar("discord_language_code", "en", "Which language (as 2 or 3 digit code) for discord messages?\nHere's a list of some/all languages codes:\nhttps://en.wikipedia.org/wiki/List_of_ISO_639-1_codes");
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 }
@@ -112,13 +116,27 @@ public Action Timer_SendMessage(Handle timer)
     g_cColor.GetString(sColor, sizeof(sColor));
     hook.SetUsername(sName);
 
+    char sCode[4];
+    g_cLangCode.GetString(sCode, sizeof(sCode));
+
+    int iLang = GetLanguageByCode(sCode);
+
+    char sNow[64];
+    Format(sNow, sizeof(sNow), "%T", "Now playing", iLang);
+
+    char sOnline[64];
+    Format(sOnline, sizeof(sOnline), "%T", "Players Online", iLang);
+
+    char sJoin[128];
+    Format(sJoin, sizeof(sJoin), "%T", "Quick Join", iLang);
+
     MessageEmbed Embed = new MessageEmbed();
     Embed.SetColor(sColor);
     Embed.SetTitle(sHostname);
     Embed.SetThumb(sThumb);
-    Embed.AddField("Now playing:", sMap, true);
-    Embed.AddField("Players Online:", sPlayers, true);
-    Embed.AddField("Quick Join:", sConnect, true);
+    Embed.AddField(sNow, sMap, true);
+    Embed.AddField(sOnline, sPlayers, true);
+    Embed.AddField(sJoin, sConnect, true);
     hook.Embed(Embed);
     hook.Send();
     delete hook;

@@ -1,0 +1,20 @@
+"Phrases"
+{
+    "Now playing"
+    {
+        "en"    "Now playing:"
+        "de"    "Aktuell gespielt:"
+    }
+
+    "Players Online"
+    {
+        "en"    "Players Online:"
+        "de"    "Spieler online:"
+    }
+
+    "Quick Join"
+    {
+        "en"   "Join server:"
+        "de"   "Server betreten:"
+    }
+}
