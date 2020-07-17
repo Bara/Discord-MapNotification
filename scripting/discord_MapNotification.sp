@@ -9,7 +9,7 @@
 #pragma newdecls required
 
 #define LoopValidClients(%1) for(int %1 = 1; %1 <= MaxClients; %1++) if(IsClientValid(%1))
-#define FILE_LASTMAP "addons/sourcemod/configs/MapNotification_LastMap.ini"
+#define FILE_LASTMAP "addons/sourcemod/configs/DMN_LastMap.ini"
 
 ConVar g_cWebhook = null;
 ConVar g_cAvatar = null;
@@ -33,7 +33,7 @@ public void OnPluginStart()
     AutoExecConfig_SetCreateDirectory(true);
     AutoExecConfig_SetCreateFile(true);
     AutoExecConfig_SetFile("discord.mapnotifications");
-    g_cWebhook = AutoExecConfig_CreateConVar("discord_map_notification_webhook", "MapNotification", "Discord webhook name for this plugin (addons/sourcemod/configs/Discord.cfg)");
+    g_cWebhook = AutoExecConfig_CreateConVar("discord_map_notification_webhook", "MapNotification", "Discord webhook name for this plugin (addons/sourcemod/configs/DMN_Discord.cfg)");
     g_cAvatar = AutoExecConfig_CreateConVar("discord_map_notification_avatar", "https://csgottt.com/map_notification.png", "URL to Avatar image");
     g_cUsername = AutoExecConfig_CreateConVar("discord_map_notification_username", "Map Notifications", "Discord username");
     g_cColor = AutoExecConfig_CreateConVar("discord_map_notification_color", "#FF69B4", "Hexcode of the color (with '#' !)");
@@ -102,7 +102,7 @@ public Action Timer_SendMessage(Handle timer)
     char sWeb[256], sHook[256];
     g_cWebhook.GetString(sWeb, sizeof(sWeb));
     
-    if (!GetWebHook(sWeb, sHook, sizeof(sHook)))
+    if (!GetDiscordWebhook(sWeb, sHook, sizeof(sHook)))
     {
         SetFailState("[Map Notification] (Timer_SendMessage) Can't find webhook");
         return;
@@ -205,23 +205,23 @@ bool IsClientValid(int client)
     return false;
 }
 
-bool GetWebHook(const char[] sWebhook, char[] sUrl, int iLength)
+bool GetDiscordWebhook(const char[] sWebhook, char[] sUrl, int iLength)
 {
     KeyValues kvWebhook = new KeyValues("Discord");
 
     char sFile[PLATFORM_MAX_PATH];
-    BuildPath(Path_SM, sFile, sizeof(sFile), "configs/Discord.cfg");
+    BuildPath(Path_SM, sFile, sizeof(sFile), "configs/DMN_Discord.cfg");
 
     if (!FileExists(sFile))
     {
-        SetFailState("[Map Notification] (GetWebHook) \"%s\" not found!", sFile);
+        SetFailState("[Map Notification] (GetDiscordWebhook) \"%s\" not found!", sFile);
         delete kvWebhook;
         return false;
     }
 
     if (!kvWebhook.ImportFromFile(sFile))
     {
-        SetFailState("[Map Notification] (GetWebHook) Can't read: \"%s\"!", sFile);
+        SetFailState("[Map Notification] (GetDiscordWebhook) Can't read: \"%s\"!", sFile);
         delete kvWebhook;
         return false;
     }
