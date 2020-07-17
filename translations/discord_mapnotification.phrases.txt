@@ -4,7 +4,7 @@
     {
         "en"    "Now playing:"
         "de"    "Aktuell gespielt:"
-		"pt"    "Mapa Atual:"
+		"pt"    "Mapa:"
     }
 
     "Players Online"

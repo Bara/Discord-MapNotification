@@ -20,8 +20,8 @@ ConVar g_cLangCode = null;
 public Plugin myinfo =
 {
     name        = "[Discord] Map Notifications",
-    description = "",
-    version     = "1.0.1",
+    description = "Notifies map changes in Discord",
+    version     = "1.0.2",
     author      = "Bara",
     url         = "https://github.com/Bara"
 };
