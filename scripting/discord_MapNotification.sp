@@ -16,6 +16,7 @@ ConVar g_cAvatar = null;
 ConVar g_cUsername = null;
 ConVar g_cColor = null;
 ConVar g_cLangCode = null;
+ConVar g_cGame = null;
 
 public Plugin myinfo =
 {
@@ -37,7 +38,8 @@ public void OnPluginStart()
     g_cAvatar = AutoExecConfig_CreateConVar("discord_map_notification_avatar", "https://csgottt.com/map_notification.png", "URL to Avatar image");
     g_cUsername = AutoExecConfig_CreateConVar("discord_map_notification_username", "Map Notifications", "Discord username");
     g_cColor = AutoExecConfig_CreateConVar("discord_map_notification_color", "#FF69B4", "Hexcode of the color (with '#' !)");
-    g_cLangCode = AutoExecConfig_CreateConVar("discord_language_code", "en", "Which language (as 2 or 3 digit code) for discord messages?\nHere's a list of some/all languages codes:\nhttps://en.wikipedia.org/wiki/List_of_ISO_639-1_codes");
+    g_cLangCode = AutoExecConfig_CreateConVar("discord_map_notification_language_code", "en", "Which language (as 2 or 3 digit code) for discord messages?\nHere's a list of some/all languages codes:\nhttps://en.wikipedia.org/wiki/List_of_ISO_639-1_codes");
+    g_cGame = AutoExecConfig_CreateConVar("discord_map_notification_game", "csgo", "Which game directory for images? (Default: csgo)");
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 }
@@ -90,9 +92,12 @@ public Action Timer_SendMessage(Handle timer)
     char sConnect[256];
     Format(sConnect, sizeof(sConnect), "steam://connect/%s:%d", sIP, iPort);
 
+    char sGame[18];
+    g_cGame.GetString(sGame, sizeof(sGame));
+
     /* Set bot avatar */
     char sThumb[256];
-    Format(sThumb, sizeof(sThumb), "https://image.gametracker.com/images/maps/160x120/csgo/%s.jpg", sMap);
+    Format(sThumb, sizeof(sThumb), "https://image.gametracker.com/images/maps/160x120/%s/%s.jpg", sGame, sMap);
 
     /* Get avatar url */
     char sAvatar[256];
@@ -185,7 +190,7 @@ void UpdateLastMap(const char[] sMap)
     }
     else
     {
-        delete fFile;
+        delete fFile; // Just to be sure
         SetFailState("[Map Notification] (UpdateLastMap) Cannot open file %s", FILE_LASTMAP);
         return;
     }
