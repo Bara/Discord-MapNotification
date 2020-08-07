@@ -56,7 +56,7 @@ public Action Timer_SendMessage(Handle timer)
     cvar.GetString(sHostname, sizeof(sHostname));
 
     /* Get map */
-    char sMap[32], sLastMap[32];
+    char sMap[64], sLastMap[32];
     GetCurrentMap(sMap, sizeof(sMap));
     GetLastMap(sLastMap, sizeof(sLastMap));
 
@@ -94,6 +94,12 @@ public Action Timer_SendMessage(Handle timer)
 
     char sGame[18];
     g_cGame.GetString(sGame, sizeof(sGame));
+
+    char sSplit[3][32];
+    if (ExplodeString(sMap, "/", sSplit, sizeof(sSplit), sizeof(sSplit[])) > 1)
+    {
+        strcopy(sMap, sizeof(sMap), sSplit[2]);
+    }
 
     /* Set bot avatar */
     char sThumb[256];
@@ -179,7 +185,7 @@ void UpdateLastMap(const char[] sMap)
 
     if (fFile != null)
     {
-        FlushFile(fFile);
+        fFile.Flush();
         bool success = WriteFileLine(fFile, sMap);
         if (!success)
         {
