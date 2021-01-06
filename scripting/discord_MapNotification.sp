@@ -46,6 +46,7 @@ public void OnPluginStart()
 
 public void OnMapStart()
 {
+    LogMessage("OnMapStart");
     CreateTimer(15.0, Timer_SendMessage, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
@@ -71,10 +72,14 @@ public Action Timer_SendMessage(Handle timer)
         iPlayers++;
     }
 
+    LogMessage("Timer_SendMessage1");
+
     if (StrContains(sLastMap, sMap, false) != -1 && iPlayers < 2)
     {
         return;
     }
+
+    LogMessage("Timer_SendMessage2");
 
     char sPlayers[24];
     Format(sPlayers, sizeof(sPlayers), "%d/%d", iPlayers, iMax);
@@ -119,6 +124,8 @@ public Action Timer_SendMessage(Handle timer)
         return;
     }
 
+    LogMessage("Timer_SendMessage3");
+
     DiscordWebHook hook = new DiscordWebHook(sHook);
     hook.SlackMode = true;
 
@@ -151,6 +158,8 @@ public Action Timer_SendMessage(Handle timer)
     hook.Embed(Embed);
     hook.Send();
     delete hook;
+
+    LogMessage("Timer_SendMessage4");
 
     UpdateLastMap(sMap);
 }
