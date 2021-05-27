@@ -4,20 +4,24 @@
     {
         "en"    "Now playing:"
         "de"    "Aktuell gespielt:"
-		"pt"    "Mapa Atual:"
+	"pt"    "Mapa Atual:"
+	"tr"    "Şimdi oynuyor:"
+		
     }
 
     "Players Online"
     {
         "en"    "Players Online:"
         "de"    "Spieler online:"
-		"pt"    "Players Online:"
+	"pt"    "Players Online:"
+	"tr"    "Açık oyuncular:"
     }
 
     "Quick Join"
     {
         "en"   "Join server:"
         "de"   "Server betreten:"
-		"pt"   "Connect:"
+	"pt"   "Connect:"
+        "tr"   "Sunucuya Katıl"
     }
 }
