@@ -74,14 +74,10 @@ public Action Timer_SendMessage(Handle timer)
         iPlayers++;
     }
 
-    LogMessage("Timer_SendMessage1");
-
     if (StrContains(sLastMap, sMap, false) != -1 && iPlayers < 2)
     {
-        return;
+        return Plugin_Stop;
     }
-
-    LogMessage("Timer_SendMessage2");
 
     char sPlayers[24];
     Format(sPlayers, sizeof(sPlayers), "%d/%d", iPlayers, iMax);
@@ -128,10 +124,8 @@ public Action Timer_SendMessage(Handle timer)
     if (!GetDiscordWebhook(sWeb, sHook, sizeof(sHook)))
     {
         SetFailState("[Map Notification] (Timer_SendMessage) Can't find webhook");
-        return;
+        return Plugin_Stop;
     }
-
-    LogMessage("Timer_SendMessage3");
 
     DiscordWebHook hook = new DiscordWebHook(sHook);
     hook.SlackMode = true;
@@ -166,12 +160,12 @@ public Action Timer_SendMessage(Handle timer)
     hook.Send();
     delete hook;
 
-    LogMessage("Timer_SendMessage4");
-
     UpdateLastMap(sMap);
+
+    return Plugin_Stop;
 }
 
-bool GetLastMap(char[] sMap, int iLength)
+void GetLastMap(char[] sMap, int iLength)
 {
     File fFile = OpenFile(FILE_LASTMAP, "r");
 
