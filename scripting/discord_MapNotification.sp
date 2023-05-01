@@ -2,9 +2,8 @@
 
 #include <sourcemod>
 #include <regex>
-#include <SteamWorks>
 #include <autoexecconfig>
-#include <discord>
+#include <discordWebhookAPI>
 
 #pragma newdecls required
 
@@ -38,7 +37,7 @@ public void OnPluginStart()
     g_cWebhook = AutoExecConfig_CreateConVar("discord_map_notification_webhook", "MapNotification", "Discord webhook name for this plugin (addons/sourcemod/configs/DMN_Discord.cfg)");
     g_cAvatar = AutoExecConfig_CreateConVar("discord_map_notification_avatar", "https://csgottt.com/map_notification.png", "URL to Avatar image");
     g_cUsername = AutoExecConfig_CreateConVar("discord_map_notification_username", "Map Notifications", "Discord username");
-    g_cColor = AutoExecConfig_CreateConVar("discord_map_notification_color", "#FF69B4", "Hexcode of the color (with '#' !)");
+    g_cColor = AutoExecConfig_CreateConVar("discord_map_notification_colors", "16738740", "Decimal color code\nHex to Decimal - https://www.rapidtables.com/convert/number/hex-to-decimal.html");
     g_cLangCode = AutoExecConfig_CreateConVar("discord_map_notification_language_code", "en", "Which language (as 2 or 3 digit code) for discord messages?\nHere's a list of some/all languages codes:\nhttps://en.wikipedia.org/wiki/List_of_ISO_639-1_codes");
     g_cGame = AutoExecConfig_CreateConVar("discord_map_notification_game", "csgo", "Which game directory for images? (Default: csgo)");
     g_cLogo = AutoExecConfig_CreateConVar("discord_custom_logo_url", "", "If you want to set a custom logo for the embedded discord message, fill this with your logo url out.\nIf you use custom logo, map picture (from gametracker) will be ignored.");
@@ -83,11 +82,14 @@ public Action Timer_SendMessage(Handle timer)
     Format(sPlayers, sizeof(sPlayers), "%d/%d", iPlayers, iMax);
 
     /* Get server ip + port for connection link */
-    int iPieces[4];
-    SteamWorks_GetPublicIP(iPieces);
-
-    char sIP[32];
-    Format(sIP, sizeof(sIP), "%d.%d.%d.%d", iPieces[0], iPieces[1], iPieces[2], iPieces[3]);
+    char sIP[18];
+    int ips[4];
+    int iIP = GetConVarInt(FindConVar("hostip"));
+    ips[0] = (iIP >> 24) & 0x000000FF;
+    ips[1] = (iIP >> 16) & 0x000000FF;
+    ips[2] = (iIP >> 8) & 0x000000FF;
+    ips[3] = iIP & 0x000000FF;
+    Format(sIP, sizeof(sIP), "%d.%d.%d.%d", ips[0], ips[1], ips[2], ips[3]);
 
     cvar = FindConVar("hostport");
     int iPort = cvar.IntValue;
@@ -127,42 +129,58 @@ public Action Timer_SendMessage(Handle timer)
         return Plugin_Stop;
     }
 
-    DiscordWebHook hook = new DiscordWebHook(sHook);
-    hook.SlackMode = true;
+    Webhook wWebhook = new Webhook();
 
-    char sName[128], sColor[8];
+    char sName[128];
     g_cUsername.GetString(sName, sizeof(sName));
-    g_cColor.GetString(sColor, sizeof(sColor));
-    hook.SetUsername(sName);
+    wWebhook.SetUsername(sName);
 
     char sCode[4];
     g_cLangCode.GetString(sCode, sizeof(sCode));
 
     int iLang = GetLanguageByCode(sCode);
 
+    Embed eEmbed = new Embed();
+    eEmbed.SetColor(g_cColor.IntValue);
+    eEmbed.SetTitle(sHostname);
+
+    EmbedThumbnail eThumbnail = new EmbedThumbnail(sThumb);
+    eEmbed.SetThumbnail(eThumbnail);
+    delete eThumbnail;
+
     char sNow[64];
     Format(sNow, sizeof(sNow), "%T", "Now playing", iLang);
+    EmbedField eBuffer = new EmbedField(sNow, sMap, true);
+    eEmbed.AddField(eBuffer);
+    delete eBuffer;
 
     char sOnline[64];
     Format(sOnline, sizeof(sOnline), "%T", "Players Online", iLang);
+    eBuffer = new EmbedField(sOnline, sPlayers, true);
+    eEmbed.AddField(eBuffer);
+    delete eBuffer;
 
     char sJoin[128];
     Format(sJoin, sizeof(sJoin), "%T", "Quick Join", iLang);
+    eBuffer = new EmbedField(sJoin, sConnect, true);
+    eEmbed.AddField(eBuffer);
+    delete eBuffer;
 
-    MessageEmbed Embed = new MessageEmbed();
-    Embed.SetColor(sColor);
-    Embed.SetTitle(sHostname);
-    Embed.SetThumb(sThumb);
-    Embed.AddField(sNow, sMap, true);
-    Embed.AddField(sOnline, sPlayers, true);
-    Embed.AddField(sJoin, sConnect, true);
-    hook.Embed(Embed);
-    hook.Send();
-    delete hook;
+    wWebhook.AddEmbed(eEmbed);
+    wWebhook.Execute(sHook, OnWebHookExecuted);
+    delete wWebhook;
 
     UpdateLastMap(sMap);
 
     return Plugin_Stop;
+}
+
+public void OnWebHookExecuted(HTTPResponse response, any value)
+{
+    if (response.Status != HTTPStatus_NoContent)
+    {
+        LogError("[Discord.OnWebHookExecuted] An error has occured while sending the webhook. Status Code: %d", response.Status);
+    }
 }
 
 void GetLastMap(char[] sMap, int iLength)
