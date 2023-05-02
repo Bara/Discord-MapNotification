@@ -150,21 +150,18 @@ public Action Timer_SendMessage(Handle timer)
 
     char sNow[64];
     Format(sNow, sizeof(sNow), "%T", "Now playing", iLang);
-    EmbedField eBuffer = new EmbedField(sNow, sMap, true);
-    eEmbed.AddField(eBuffer);
-    delete eBuffer;
+    EmbedField eMap = new EmbedField(sNow, sMap, true);
+    eEmbed.AddField(eMap);
 
     char sOnline[64];
     Format(sOnline, sizeof(sOnline), "%T", "Players Online", iLang);
-    eBuffer = new EmbedField(sOnline, sPlayers, true);
-    eEmbed.AddField(eBuffer);
-    delete eBuffer;
+    EmbedField ePlayers = new EmbedField(sOnline, sPlayers, true);
+    eEmbed.AddField(ePlayers);
 
     char sJoin[128];
     Format(sJoin, sizeof(sJoin), "%T", "Quick Join", iLang);
-    eBuffer = new EmbedField(sJoin, sConnect, true);
-    eEmbed.AddField(eBuffer);
-    delete eBuffer;
+    EmbedField eConnect = new EmbedField(sJoin, sConnect, true);
+    eEmbed.AddField(eConnect);
 
     wWebhook.AddEmbed(eEmbed);
     wWebhook.Execute(sHook, OnWebHookExecuted);
