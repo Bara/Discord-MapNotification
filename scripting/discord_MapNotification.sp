@@ -21,7 +21,7 @@ ConVar g_cLogo = null;
 public Plugin myinfo =
 {
     name        = "[Discord] Map Notifications",
-    description = "",
+    description = "Sends an message to your discord server with some informations about the current map, players online and connect link (and maybe with map image, depends on gametracker)",
     version     = "1.0.2",
     author      = "Bara",
     url         = "https://github.com/Bara"
