@@ -19,7 +19,7 @@
 	"Quick Join"
 	{
 		"en"   "Join server:"
-		"de"   "Server betreten:"
+		"de"   "Server beitreten:"
 		"pt"   "Connect:"
 		"tr"   "Sunucuya Katıl"
 	}
