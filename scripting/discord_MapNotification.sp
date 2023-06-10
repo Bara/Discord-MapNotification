@@ -43,15 +43,31 @@ public void OnPluginStart()
     g_cLogo = AutoExecConfig_CreateConVar("discord_custom_logo_url", "", "If you want to set a custom logo for the embedded discord message, fill this with your logo url out.\nIf you use custom logo, map picture (from gametracker) will be ignored.");
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
+
+    RegAdminCmd("dmn_test", Command_Test, ADMFLAG_ROOT);
 }
 
 public void OnMapStart()
 {
     LogMessage("OnMapStart");
-    CreateTimer(15.0, Timer_SendMessage, _, TIMER_FLAG_NO_MAPCHANGE);
+    CreateTimer(15.0, Timer_PrepareMessage, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
-public Action Timer_SendMessage(Handle timer)
+public Action Command_Test(int client, int args)
+{
+    PrepareAndSendMessage(true);
+
+    return Plugin_Stop;
+}
+
+public Action Timer_PrepareMessage(Handle timer)
+{
+    PrepareAndSendMessage(false);
+
+    return Plugin_Stop;
+}
+
+void PrepareAndSendMessage(bool test)
 {
     char sHostname[512];
     ConVar cvar = FindConVar("hostname");
@@ -73,9 +89,9 @@ public Action Timer_SendMessage(Handle timer)
         iPlayers++;
     }
 
-    if (StrContains(sLastMap, sMap, false) != -1 && iPlayers < 2)
+    if (!test && StrContains(sLastMap, sMap, false) != -1 && iPlayers < 2)
     {
-        return Plugin_Stop;
+        return;
     }
 
     char sPlayers[24];
@@ -122,7 +138,7 @@ public Action Timer_SendMessage(Handle timer)
     if (!GetDiscordWebhook(sWeb, sHook, sizeof(sHook)))
     {
         SetFailState("[Map Notification] (Timer_SendMessage) Can't find webhook");
-        return Plugin_Stop;
+        return;
     }
 
     Webhook wWebhook = new Webhook();
@@ -169,7 +185,7 @@ public Action Timer_SendMessage(Handle timer)
 
     UpdateLastMap(sMap);
 
-    return Plugin_Stop;
+    return;
 }
 
 public void OnWebHookExecuted(HTTPResponse response, any value)
