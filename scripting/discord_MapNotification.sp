@@ -115,10 +115,6 @@ public Action Timer_SendMessage(Handle timer)
         Format(sThumb, sizeof(sThumb), "https://image.gametracker.com/images/maps/160x120/%s/%s.jpg", sGame, sMap);
     }
 
-    /* Get avatar url */
-    char sAvatar[256];
-    g_cAvatar.GetString(sAvatar, sizeof(sAvatar));
-
     /* Start and Send discord notification */
     char sWeb[256], sHook[256];
     g_cWebhook.GetString(sWeb, sizeof(sWeb));
@@ -134,6 +130,10 @@ public Action Timer_SendMessage(Handle timer)
     char sName[128];
     g_cUsername.GetString(sName, sizeof(sName));
     wWebhook.SetUsername(sName);
+
+    char sAvatar[256];
+    g_cAvatar.GetString(sAvatar, sizeof(sAvatar));
+    wWebhook.SetAvatarURL(sAvatar);
 
     char sCode[4];
     g_cLangCode.GetString(sCode, sizeof(sCode));
