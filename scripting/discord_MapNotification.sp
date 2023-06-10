@@ -21,8 +21,8 @@ ConVar g_cLogo = null;
 public Plugin myinfo =
 {
     name        = "[Discord] Map Notifications",
-    description = "",
-    version     = "1.0.1",
+    description = "Sends an message to your discord server with some informations about the current map, players online and connect link (and maybe with map image, depends on gametracker)",
+    version     = "1.0.2",
     author      = "Bara",
     url         = "https://github.com/Bara"
 };
@@ -174,7 +174,7 @@ public Action Timer_SendMessage(Handle timer)
 
 public void OnWebHookExecuted(HTTPResponse response, any value)
 {
-    if (response.Status != HTTPStatus_NoContent)
+    if (response.Status != HTTPStatus_OK)
     {
         LogError("[Discord.OnWebHookExecuted] An error has occured while sending the webhook. Status Code: %d", response.Status);
     }
@@ -237,7 +237,6 @@ bool IsClientValid(int client)
             return true;
         }
     }
-
     return false;
 }
 
