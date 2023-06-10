@@ -17,6 +17,7 @@ ConVar g_cColor = null;
 ConVar g_cLangCode = null;
 ConVar g_cGame = null;
 ConVar g_cLogo = null;
+ConVar g_cTimestamp = null;
 
 public Plugin myinfo =
 {
@@ -41,6 +42,7 @@ public void OnPluginStart()
     g_cLangCode = AutoExecConfig_CreateConVar("discord_map_notification_language_code", "en", "Which language (as 2 or 3 digit code) for discord messages?\nHere's a list of some/all languages codes:\nhttps://en.wikipedia.org/wiki/List_of_ISO_639-1_codes");
     g_cGame = AutoExecConfig_CreateConVar("discord_map_notification_game", "csgo", "Which game directory for images? (Default: csgo)");
     g_cLogo = AutoExecConfig_CreateConVar("discord_custom_logo_url", "", "If you want to set a custom logo for the embedded discord message, fill this with your logo url out.\nIf you use custom logo, map picture (from gametracker) will be ignored.");
+    g_cTimestamp = AutoExecConfig_CreateConVar("discord_map_notification_timestamp", "1", "Show timestamp/date in footer? (0 - Disabled, 1 - Enabled)", _, true, 0.0, true, 1.0);
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 
@@ -160,6 +162,11 @@ void PrepareAndSendMessage(bool test)
     eEmbed.SetColor(g_cColor.IntValue);
     eEmbed.SetTitle(sHostname);
 
+    if (g_cTimestamp.BoolValue)
+    {
+        eEmbed.SetTimeStampNow();
+    }
+
     EmbedThumbnail eThumbnail = new EmbedThumbnail(sThumb);
     eEmbed.SetThumbnail(eThumbnail);
     delete eThumbnail;
@@ -190,7 +197,7 @@ void PrepareAndSendMessage(bool test)
 
 public void OnWebHookExecuted(HTTPResponse response, any value)
 {
-    if (response.Status != HTTPStatus_NoContent)
+    if (response.Status != HTTPStatus_NoContent && response.Status != HTTPStatus_OK)
     {
         LogError("[Discord.OnWebHookExecuted] An error has occured while sending the webhook. Status Code: %d", response.Status);
     }
