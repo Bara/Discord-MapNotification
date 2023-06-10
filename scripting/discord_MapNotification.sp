@@ -22,8 +22,8 @@ ConVar g_cTimestamp = null;
 public Plugin myinfo =
 {
     name        = "[Discord] Map Notifications",
-    description = "",
-    version     = "1.0.1",
+    description = "Sends an message to your discord server with some informations about the current map, players online and connect link (and maybe with map image, depends on gametracker)",
+    version     = "1.0.2",
     author      = "Bara",
     url         = "https://github.com/Bara"
 };
@@ -260,7 +260,6 @@ bool IsClientValid(int client)
             return true;
         }
     }
-
     return false;
 }
 
