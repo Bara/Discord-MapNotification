@@ -19,6 +19,8 @@ ConVar g_cGame = null;
 ConVar g_cLogo = null;
 ConVar g_cIcon = null;
 ConVar g_cTimestamp = null;
+ConVar g_cTitle = null;
+ConVar g_cFooterText = null;
 
 public Plugin myinfo =
 {
@@ -45,6 +47,8 @@ public void OnPluginStart()
     g_cLogo = AutoExecConfig_CreateConVar("discord_custom_logo_url", "", "If you want to set a custom logo for the embedded discord message, fill this with your logo url out.\nIf you use custom logo, map picture (from gametracker) will be ignored.");
     g_cIcon = AutoExecConfig_CreateConVar("discord_map_notification_icon", "https://csgottt.com/map_notification.png", "URL for footer icon (empty for disabling this feature)");
     g_cTimestamp = AutoExecConfig_CreateConVar("discord_map_notification_timestamp", "1", "Show timestamp/date in footer? (0 - Disabled, 1 - Enabled)", _, true, 0.0, true, 1.0);
+    g_cTitle = AutoExecConfig_CreateConVar("discord_map_notification_title", "Custom title", "Set a custom title text or leave it blank for showing the hostname");
+    g_cFooterText = AutoExecConfig_CreateConVar("discord_map_notification_footer", "Here's the custom footer text.", "Set a custom footer text or leave it blank for showing the hoxtname");
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 
@@ -162,7 +166,15 @@ void PrepareAndSendMessage(bool test)
 
     Embed eEmbed = new Embed();
     eEmbed.SetColor(g_cColor.IntValue);
-    eEmbed.SetTitle(sHostname);
+
+    char sTitle[512];
+    g_cTitle.GetString(sTitle, sizeof(sTitle));
+    eEmbed.SetTitle(sTitle);
+
+    if (strlen(sTitle) < 1)
+    {
+        eEmbed.SetTitle(sHostname);
+    }
 
     if (g_cTimestamp.BoolValue)
     {
@@ -188,6 +200,14 @@ void PrepareAndSendMessage(bool test)
     EmbedField eConnect = new EmbedField(sJoin, sConnect, true);
     eEmbed.AddField(eConnect);
 
+    char sFooterText[628];
+    g_cFooterText.GetString(sFooterText, sizeof(sFooterText));
+    if (strlen(sFooterText) < 1)
+    {
+        FormatEx(sFooterText, sizeof(sFooterText), "%s (%s:%d)", sHostname, sIP, iPort);
+    }
+
+    EmbedFooter eFooter = new EmbedFooter(sFooterText);
     char sIcon[256];
     g_cIcon.GetString(sIcon, sizeof(sIcon));
     if (strlen(sIcon))
@@ -197,6 +217,9 @@ void PrepareAndSendMessage(bool test)
         eEmbed.SetFooter(eFooter);
         delete eFooter;
     }
+
+    eEmbed.SetFooter(eFooter);
+    delete eFooter;
 
     wWebhook.AddEmbed(eEmbed);
     wWebhook.Execute(sHook, OnWebHookExecuted);
