@@ -49,7 +49,7 @@ public void OnPluginStart()
     g_cIcon = AutoExecConfig_CreateConVar("discord_map_notification_icon", "https://csgottt.com/map_notification.png", "URL for footer icon (empty for disabling this feature)");
     g_cTimestamp = AutoExecConfig_CreateConVar("discord_map_notification_timestamp", "1", "Show timestamp/date in footer? (0 - Disabled, 1 - Enabled)", _, true, 0.0, true, 1.0);
     g_cTitle = AutoExecConfig_CreateConVar("discord_map_notification_title", "Custom title", "Set a custom title text or leave it blank for showing the hostname");
-    g_cFooterText = AutoExecConfig_CreateConVar("discord_map_notification_footer", "Here's the custom footer text.", "Set a custom footer text or leave it blank for showing the hoxtname");
+    g_cFooterText = AutoExecConfig_CreateConVar("discord_map_notification_footer", "Here's the custom footer text.", "Set a custom footer text or leave it blank for showing the hostname");
     g_cRedirectURL = AutoExecConfig_CreateConVar("discord_map_notification_redirect", "https://server.bara.dev/redirect.php", "URL to your redirect.php file, you can also use my redirect.php which is located in germany.");
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
