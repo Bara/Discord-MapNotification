@@ -212,10 +212,7 @@ void PrepareAndSendMessage(bool test)
     g_cIcon.GetString(sIcon, sizeof(sIcon));
     if (strlen(sIcon))
     {
-        EmbedFooter eFooter = new EmbedFooter(sHostname);
         eFooter.SetIconURL(sIcon);
-        eEmbed.SetFooter(eFooter);
-        delete eFooter;
     }
 
     eEmbed.SetFooter(eFooter);
