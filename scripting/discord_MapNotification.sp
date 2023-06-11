@@ -21,6 +21,7 @@ ConVar g_cIcon = null;
 ConVar g_cTimestamp = null;
 ConVar g_cTitle = null;
 ConVar g_cFooterText = null;
+ConVar g_cRedirectURL = null;
 
 public Plugin myinfo =
 {
@@ -49,6 +50,7 @@ public void OnPluginStart()
     g_cTimestamp = AutoExecConfig_CreateConVar("discord_map_notification_timestamp", "1", "Show timestamp/date in footer? (0 - Disabled, 1 - Enabled)", _, true, 0.0, true, 1.0);
     g_cTitle = AutoExecConfig_CreateConVar("discord_map_notification_title", "Custom title", "Set a custom title text or leave it blank for showing the hostname");
     g_cFooterText = AutoExecConfig_CreateConVar("discord_map_notification_footer", "Here's the custom footer text.", "Set a custom footer text or leave it blank for showing the hoxtname");
+    g_cRedirectURL = AutoExecConfig_CreateConVar("discord_map_notification_redirect", "https://server.bara.dev/redirect.php", "URL to your redirect.php file, you can also use my redirect.php which is located in germany.");
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 
@@ -118,8 +120,10 @@ void PrepareAndSendMessage(bool test)
     cvar = FindConVar("hostport");
     int iPort = cvar.IntValue;
 
-    char sConnect[256];
-    Format(sConnect, sizeof(sConnect), "steam://connect/%s:%d", sIP, iPort);
+    char sConnect[512];
+    char sURL[256];
+    g_cRedirectURL.GetString(sURL, sizeof(sURL));
+    Format(sConnect, sizeof(sConnect), "[%s:%d](%s?ip=%s&port=%d)", sIP, iPort, sURL, sIP, iPort);
 
     char sGame[18];
     g_cGame.GetString(sGame, sizeof(sGame));
