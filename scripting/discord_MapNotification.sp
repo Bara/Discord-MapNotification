@@ -23,6 +23,8 @@ enum struct Global {
     ConVar Title;
     ConVar FooterText;
     ConVar RedirectURL;
+    ConVar ServerIp;
+    ConVar ServerPort;
 }
 Global Core;
 
@@ -54,6 +56,8 @@ public void OnPluginStart()
     Core.Title = AutoExecConfig_CreateConVar("discord_map_notification_title", "Custom title", "Set a custom title text or leave it blank for showing the hostname");
     Core.FooterText = AutoExecConfig_CreateConVar("discord_map_notification_footer", "Here's the custom footer text.", "Set a custom footer text or leave it blank for showing the hostname");
     Core.RedirectURL = AutoExecConfig_CreateConVar("discord_map_notification_redirect", "https://server.bara.dev/redirect.php", "URL to your redirect.php file, you can also use my redirect.php which is located in germany.");
+    Core.ServerIp = AutoExecConfig_CreateConVar("discord_map_notification_server_ip", "", "Set custom server ip or hostname. Keep it empty if you don't want it.");
+    Core.ServerPort = AutoExecConfig_CreateConVar("discord_map_notification_server_port", "0", "Set custom server port. Keep it 0 if you don't want it.", _, true, 0.0);
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 
@@ -111,17 +115,27 @@ void PrepareAndSendMessage(bool test)
     Format(sPlayers, sizeof(sPlayers), "%d/%d", iPlayers, iMax);
 
     /* Get server ip + port for connection link */
-    char sIP[18];
-    int ips[4];
-    int iIP = GetConVarInt(FindConVar("hostip"));
-    ips[0] = (iIP >> 24) & 0x000000FF;
-    ips[1] = (iIP >> 16) & 0x000000FF;
-    ips[2] = (iIP >> 8) & 0x000000FF;
-    ips[3] = iIP & 0x000000FF;
-    Format(sIP, sizeof(sIP), "%d.%d.%d.%d", ips[0], ips[1], ips[2], ips[3]);
+    char sIP[32];
+    Core.ServerIp.GetString(sIP, sizeof(sIP));
+
+    if (strlen(sIP) < 2)
+    {
+        int ips[4];
+        int iIP = GetConVarInt(FindConVar("hostip"));
+        ips[0] = (iIP >> 24) & 0x000000FF;
+        ips[1] = (iIP >> 16) & 0x000000FF;
+        ips[2] = (iIP >> 8) & 0x000000FF;
+        ips[3] = iIP & 0x000000FF;
+        Format(sIP, sizeof(sIP), "%d.%d.%d.%d", ips[0], ips[1], ips[2], ips[3]);
+    }
 
     cvar = FindConVar("hostport");
-    int iPort = cvar.IntValue;
+    int iPort = Core.ServerPort.IntValue;
+
+    if (iPort < 1)
+    {
+        iPort = cvar.IntValue;
+    }
 
     char sConnect[512];
     char sURL[256];
