@@ -10,18 +10,21 @@
 #define LoopValidClients(%1) for(int %1 = 1; %1 <= MaxClients; %1++) if(IsClientValid(%1))
 #define FILE_LASTMAP "addons/sourcemod/configs/DMN_LastMap.ini"
 
-ConVar g_cWebhook = null;
-ConVar g_cAvatar = null;
-ConVar g_cUsername = null;
-ConVar g_cColor = null;
-ConVar g_cLangCode = null;
-ConVar g_cGame = null;
-ConVar g_cLogo = null;
-ConVar g_cIcon = null;
-ConVar g_cTimestamp = null;
-ConVar g_cTitle = null;
-ConVar g_cFooterText = null;
-ConVar g_cRedirectURL = null;
+enum struct Global {
+    ConVar Webhook;
+    ConVar Avatar;
+    ConVar Username;
+    ConVar Color;
+    ConVar LangCode;
+    ConVar Game;
+    ConVar Logo;
+    ConVar Icon;
+    ConVar Timestamp;
+    ConVar Title;
+    ConVar FooterText;
+    ConVar RedirectURL;
+}
+Global Core;
 
 public Plugin myinfo =
 {
@@ -39,18 +42,18 @@ public void OnPluginStart()
     AutoExecConfig_SetCreateDirectory(true);
     AutoExecConfig_SetCreateFile(true);
     AutoExecConfig_SetFile("discord.mapnotifications");
-    g_cWebhook = AutoExecConfig_CreateConVar("discord_map_notification_webhook", "MapNotification", "Discord webhook name for this plugin (addons/sourcemod/configs/DMN_Discord.cfg)");
-    g_cAvatar = AutoExecConfig_CreateConVar("discord_map_notification_avatar", "https://csgottt.com/map_notification.png", "URL to Avatar image");
-    g_cUsername = AutoExecConfig_CreateConVar("discord_map_notification_username", "Map Notifications", "Discord username");
-    g_cColor = AutoExecConfig_CreateConVar("discord_map_notification_colors", "16738740", "Decimal color code\nHex to Decimal - https://www.rapidtables.com/convert/number/hex-to-decimal.html");
-    g_cLangCode = AutoExecConfig_CreateConVar("discord_map_notification_language_code", "en", "Which language (as 2 or 3 digit code) for discord messages?\nHere's a list of some/all languages codes:\nhttps://en.wikipedia.org/wiki/List_of_ISO_639-1_codes");
-    g_cGame = AutoExecConfig_CreateConVar("discord_map_notification_game", "csgo", "Which game directory for images? (Default: csgo)");
-    g_cLogo = AutoExecConfig_CreateConVar("discord_custom_logo_url", "", "If you want to set a custom logo for the embedded discord message, fill this with your logo url out.\nIf you use custom logo, map picture (from gametracker) will be ignored.");
-    g_cIcon = AutoExecConfig_CreateConVar("discord_map_notification_icon", "https://csgottt.com/map_notification.png", "URL for footer icon (empty for disabling this feature)");
-    g_cTimestamp = AutoExecConfig_CreateConVar("discord_map_notification_timestamp", "1", "Show timestamp/date in footer? (0 - Disabled, 1 - Enabled)", _, true, 0.0, true, 1.0);
-    g_cTitle = AutoExecConfig_CreateConVar("discord_map_notification_title", "Custom title", "Set a custom title text or leave it blank for showing the hostname");
-    g_cFooterText = AutoExecConfig_CreateConVar("discord_map_notification_footer", "Here's the custom footer text.", "Set a custom footer text or leave it blank for showing the hostname");
-    g_cRedirectURL = AutoExecConfig_CreateConVar("discord_map_notification_redirect", "https://server.bara.dev/redirect.php", "URL to your redirect.php file, you can also use my redirect.php which is located in germany.");
+    Core.Webhook = AutoExecConfig_CreateConVar("discord_map_notification_webhook", "MapNotification", "Discord webhook name for this plugin (addons/sourcemod/configs/DMN_Discord.cfg)");
+    Core.Avatar = AutoExecConfig_CreateConVar("discord_map_notification_avatar", "https://csgottt.com/map_notification.png", "URL to Avatar image");
+    Core.Username = AutoExecConfig_CreateConVar("discord_map_notification_username", "Map Notifications", "Discord username");
+    Core.Color = AutoExecConfig_CreateConVar("discord_map_notification_colors", "16738740", "Decimal color code\nHex to Decimal - https://www.rapidtables.com/convert/number/hex-to-decimal.html");
+    Core.LangCode = AutoExecConfig_CreateConVar("discord_map_notification_language_code", "en", "Which language (as 2 or 3 digit code) for discord messages?\nHere's a list of some/all languages codes:\nhttps://en.wikipedia.org/wiki/List_of_ISO_639-1_codes");
+    Core.Game = AutoExecConfig_CreateConVar("discord_map_notification_game", "csgo", "Which game directory for images? (Default: csgo)");
+    Core.Logo = AutoExecConfig_CreateConVar("discord_custom_logo_url", "", "If you want to set a custom logo for the embedded discord message, fill this with your logo url out.\nIf you use custom logo, map picture (from gametracker) will be ignored.");
+    Core.Icon = AutoExecConfig_CreateConVar("discord_map_notification_icon", "https://csgottt.com/map_notification.png", "URL for footer icon (empty for disabling this feature)");
+    Core.Timestamp = AutoExecConfig_CreateConVar("discord_map_notification_timestamp", "1", "Show timestamp/date in footer? (0 - Disabled, 1 - Enabled)", _, true, 0.0, true, 1.0);
+    Core.Title = AutoExecConfig_CreateConVar("discord_map_notification_title", "Custom title", "Set a custom title text or leave it blank for showing the hostname");
+    Core.FooterText = AutoExecConfig_CreateConVar("discord_map_notification_footer", "Here's the custom footer text.", "Set a custom footer text or leave it blank for showing the hostname");
+    Core.RedirectURL = AutoExecConfig_CreateConVar("discord_map_notification_redirect", "https://server.bara.dev/redirect.php", "URL to your redirect.php file, you can also use my redirect.php which is located in germany.");
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 
@@ -122,11 +125,11 @@ void PrepareAndSendMessage(bool test)
 
     char sConnect[512];
     char sURL[256];
-    g_cRedirectURL.GetString(sURL, sizeof(sURL));
+    Core.RedirectURL.GetString(sURL, sizeof(sURL));
     Format(sConnect, sizeof(sConnect), "[%s:%d](%s?ip=%s&port=%d)", sIP, iPort, sURL, sIP, iPort);
 
     char sGame[18];
-    g_cGame.GetString(sGame, sizeof(sGame));
+    Core.Game.GetString(sGame, sizeof(sGame));
 
     char sSplit[3][32];
     if (ExplodeString(sMap, "/", sSplit, sizeof(sSplit), sizeof(sSplit[])) > 1)
@@ -136,7 +139,7 @@ void PrepareAndSendMessage(bool test)
 
     /* Set bot avatar */
     char sThumb[256];
-    g_cLogo.GetString(sThumb, sizeof(sThumb));
+    Core.Logo.GetString(sThumb, sizeof(sThumb));
 
     if (strlen(sThumb) < 2)
     {
@@ -145,7 +148,7 @@ void PrepareAndSendMessage(bool test)
 
     /* Start and Send discord notification */
     char sWeb[256], sHook[256];
-    g_cWebhook.GetString(sWeb, sizeof(sWeb));
+    Core.Webhook.GetString(sWeb, sizeof(sWeb));
     
     if (!GetDiscordWebhook(sWeb, sHook, sizeof(sHook)))
     {
@@ -156,23 +159,23 @@ void PrepareAndSendMessage(bool test)
     Webhook wWebhook = new Webhook();
 
     char sName[128];
-    g_cUsername.GetString(sName, sizeof(sName));
+    Core.Username.GetString(sName, sizeof(sName));
     wWebhook.SetUsername(sName);
 
     char sAvatar[256];
-    g_cAvatar.GetString(sAvatar, sizeof(sAvatar));
+    Core.Avatar.GetString(sAvatar, sizeof(sAvatar));
     wWebhook.SetAvatarURL(sAvatar);
 
     char sCode[4];
-    g_cLangCode.GetString(sCode, sizeof(sCode));
+    Core.LangCode.GetString(sCode, sizeof(sCode));
 
     int iLang = GetLanguageByCode(sCode);
 
     Embed eEmbed = new Embed();
-    eEmbed.SetColor(g_cColor.IntValue);
+    eEmbed.SetColor(Core.Color.IntValue);
 
     char sTitle[512];
-    g_cTitle.GetString(sTitle, sizeof(sTitle));
+    Core.Title.GetString(sTitle, sizeof(sTitle));
     eEmbed.SetTitle(sTitle);
 
     if (strlen(sTitle) < 1)
@@ -180,7 +183,7 @@ void PrepareAndSendMessage(bool test)
         eEmbed.SetTitle(sHostname);
     }
 
-    if (g_cTimestamp.BoolValue)
+    if (Core.Timestamp.BoolValue)
     {
         eEmbed.SetTimeStampNow();
     }
@@ -205,7 +208,7 @@ void PrepareAndSendMessage(bool test)
     eEmbed.AddField(eConnect);
 
     char sFooterText[628];
-    g_cFooterText.GetString(sFooterText, sizeof(sFooterText));
+    Core.FooterText.GetString(sFooterText, sizeof(sFooterText));
     if (strlen(sFooterText) < 1)
     {
         FormatEx(sFooterText, sizeof(sFooterText), "%s (%s:%d)", sHostname, sIP, iPort);
@@ -213,7 +216,7 @@ void PrepareAndSendMessage(bool test)
 
     EmbedFooter eFooter = new EmbedFooter(sFooterText);
     char sIcon[256];
-    g_cIcon.GetString(sIcon, sizeof(sIcon));
+    Core.Icon.GetString(sIcon, sizeof(sIcon));
     if (strlen(sIcon))
     {
         eFooter.SetIconURL(sIcon);
